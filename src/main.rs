@@ -80,7 +80,7 @@ fn run_app<B: Backend>(
                         KeyCode::Char('g') => app.music_handle.skip(),
                         KeyCode::Char('a') => app.queue_items.add(app.selected_item()),
                         KeyCode::Enter => app.evaluate(),
-                        KeyCode::Backspace => app.backpedal(),
+                        KeyCode::Backspace => app.dir_back(),
                         KeyCode::Down | KeyCode::Char('j') => app.browser_items.next(),
                         KeyCode::Up | KeyCode::Char('k') => app.browser_items.previous(),
                         KeyCode::Right | KeyCode::Char('l') => {

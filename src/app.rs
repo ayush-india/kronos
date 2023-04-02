@@ -93,7 +93,7 @@ impl<'a> App<'a> {
     }
 
     // cd into selected directory
-    pub fn backpedal(&mut self) {
+    pub fn dir_back(&mut self) {
         env::set_current_dir("../").unwrap();
         self.browser_items = StatefulList::with_items(gen_funcs::scan_folder());
         self.browser_items.next();
