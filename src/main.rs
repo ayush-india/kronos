@@ -2,6 +2,7 @@ mod app;
 mod config;
 
 use std::{
+    env::{self, args},
     error::Error,
     io,
     time::{Duration, Instant},
@@ -64,6 +65,7 @@ fn run_app<B: Backend>(
     tick_rate: Duration,
 ) -> io::Result<()> {
     let mut last_tick = Instant::now();
+    let arg: Vec<String> = env::args().collect();
     loop {
         terminal.draw(|f| ui(f, &mut app, &cfg))?;
 
@@ -78,7 +80,7 @@ fn run_app<B: Backend>(
                         KeyCode::Char('q') => return Ok(()),
                         KeyCode::Char('p') | KeyCode::Char(' ') => app.music_handle.play_pause(),
                         KeyCode::Char('g') => app.music_handle.skip(),
-                        KeyCode::Char('a') => app.queue_items.add(app.selected_item()),
+                        KeyCode::Char('a') => app.queue_items.add(std::path::Path::new(&arg[1]).to_path_buf()),
                         KeyCode::Enter => app.evaluate(),
                         KeyCode::Backspace => app.dir_back(),
                         KeyCode::Down | KeyCode::Char('j') => app.browser_items.next(),
@@ -150,8 +152,8 @@ fn run_app<B: Backend>(
 fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App, cfg: &Config) {
     // Total Size
     let size = f.size();
-
-    // chunking from top to bottom, 3 gets tabs displayed, the rest goes to item layouts
+    //
+    // // chunking from top to bottom, 3 gets tabs displayed, the rest goes to item layouts
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([Constraint::Length(3), Constraint::Min(0)].as_ref())
