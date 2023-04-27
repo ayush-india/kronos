@@ -65,7 +65,6 @@ fn run_app<B: Backend>(
     tick_rate: Duration,
 ) -> io::Result<()> {
     let mut last_tick = Instant::now();
-    let arg: Vec<String> = env::args().collect();
     loop {
         terminal.draw(|f| ui(f, &mut app, &cfg))?;
 
@@ -76,29 +75,6 @@ fn run_app<B: Backend>(
             // different keys depending on which browser tab
             if let Event::Key(key) = event::read()? {
                 match app.input_mode() {
-                    InputMode::Browser => match key.code {
-                        KeyCode::Char('q') => return Ok(()),
-                        KeyCode::Char('p') | KeyCode::Char(' ') => app.music_handle.play_pause(),
-                        KeyCode::Char('g') => app.music_handle.skip(),
-                        KeyCode::Char('a') => app.queue_items.add(std::path::Path::new(&arg[1]).to_path_buf()),
-                        KeyCode::Enter => app.evaluate(),
-                        KeyCode::Backspace => app.dir_back(),
-                        KeyCode::Down | KeyCode::Char('j') => app.browser_items.next(),
-                        KeyCode::Up | KeyCode::Char('k') => app.browser_items.previous(),
-                        KeyCode::Right | KeyCode::Char('l') => {
-                            app.browser_items.unselect();
-                            app.set_input_mode(InputMode::Queue);
-                            app.queue_items.next();
-                        }
-                        KeyCode::Tab => {
-                            app.next();
-                            match app.input_mode() {
-                                InputMode::Controls => app.set_input_mode(InputMode::Browser),
-                                _ => app.set_input_mode(InputMode::Controls),
-                            };
-                        }
-                        _ => {}
-                    },
                     InputMode::Queue => match key.code {
                         KeyCode::Char('q') => return Ok(()),
                         KeyCode::Char('p') => app.music_handle.play_pause(),
@@ -108,36 +84,26 @@ fn run_app<B: Backend>(
                                 app.music_handle.play(i.clone());
                             };
                         }
-                        KeyCode::Down | KeyCode::Char('j') => app.queue_items.next(),
-                        KeyCode::Up | KeyCode::Char('k') => app.queue_items.previous(),
-                        KeyCode::Char('r') => app.queue_items.remove(),
-                        KeyCode::Left | KeyCode::Char('h') => {
-                            app.queue_items.unselect();
-                            app.set_input_mode(InputMode::Browser);
-                            app.browser_items.next();
-                        }
-                        KeyCode::Tab => {
-                            app.next();
-                            match app.input_mode() {
-                                InputMode::Controls => app.set_input_mode(InputMode::Browser),
-                                _ => app.set_input_mode(InputMode::Controls),
-                            };
-                        }
                         _ => {}
+                    },
+                    InputMode::Browser => match key.code {
+                        KeyCode::Char('q') => return Ok(()),
+                        _ => {},
                     },
                     InputMode::Controls => match key.code {
                         KeyCode::Char('q') => return Ok(()),
-                        KeyCode::Char('p') => app.music_handle.play_pause(),
-                        KeyCode::Char('g') => app.music_handle.skip(),
-                        KeyCode::Down | KeyCode::Char('j') => app.control_table.next(),
-                        KeyCode::Up | KeyCode::Char('k') => app.control_table.previous(),
-                        KeyCode::Tab => {
-                            app.next();
-                            match app.input_mode() {
-                                InputMode::Controls => app.set_input_mode(InputMode::Browser),
-                                _ => app.set_input_mode(InputMode::Controls),
-                            };
-                        }
+                        // KeyCode::Char('q') => return Ok(()),
+                        // KeyCode::Char('p') => app.music_handle.play_pause(),
+                        // KeyCode::Char('g') => app.music_handle.skip(),
+                        // KeyCode::Down | KeyCode::Char('j') => app.control_table.next(),
+                        // KeyCode::Up | KeyCode::Char('k') => app.control_table.previous(),
+                        // KeyCode::Tab => {
+                        //     app.next();
+                        //     match app.input_mode() {
+                        //         InputMode::Controls => app.set_input_mode(InputMode::Browser),
+                        //         _ => app.set_input_mode(InputMode::Controls),
+                        //     };
+                        // }
                         _ => {}
                     },
                 }
