@@ -122,22 +122,19 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App, cfg: &Config) {
     // // chunking from top to bottom, 3 gets tabs displayed, the rest goes to item layouts
     let chunks = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([Constraint::Length(3), Constraint::Min(0)].as_ref())
+        .constraints([Constraint::Length(1), Constraint::Min(0)].as_ref())
         .split(size);
 
     // Main Background block, covers entire screen
-    let block = Block::default().style(Style::default().bg(cfg.background()));
-    f.render_widget(block, size);
+    let _block = Block::default().style(Style::default().bg(cfg.background()));
 
     // Tab Title items collected
     let titles = app
         .titles
         .iter()
-        .map(|t| {
-            let (first, rest) = t.split_at(1);
+        .map(|_t| {
             Spans::from(vec![
-                Span::styled(first, Style::default().fg(cfg.highlight_background())), // CHANGE FOR CUSTOMIZATION
-                Span::styled(rest, Style::default().fg(cfg.highlight_background())), // These are tab highlights, first vs rest diff colors
+                Span::styled("Music", Style::default().fg(cfg.highlight_background())), // CHANGE FOR CUSTOMIZATION
             ])
         })
         .collect();
@@ -152,7 +149,6 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App, cfg: &Config) {
                 .add_modifier(Modifier::BOLD)
                 .bg(cfg.background()),
         );
-    f.render_widget(tabs, chunks[0]);
 
     match app.active_tab {
         AppTab::Music => music_tab(f, app, chunks[1], cfg),
@@ -205,7 +201,6 @@ fn music_tab<B: Backend>(f: &mut Frame<B>, app: &mut App, chunks: Rect, cfg: &Co
                 .add_modifier(Modifier::BOLD),
         )
         .highlight_symbol(">> ");
-    f.render_stateful_widget(items, browser_queue[0], &mut app.browser_items.state());
 
     let queue_items: Vec<ListItem> = app
         .queue_items
@@ -236,7 +231,6 @@ fn music_tab<B: Backend>(f: &mut Frame<B>, app: &mut App, chunks: Rect, cfg: &Co
                 .add_modifier(Modifier::BOLD),
         )
         .highlight_symbol(">> ");
-    f.render_stateful_widget(queue_items, queue_playing[0], &mut app.queue_items.state());
 
     let playing_title = format!("| {current_song} |", current_song = app.current_song());
 
@@ -252,7 +246,6 @@ fn music_tab<B: Backend>(f: &mut Frame<B>, app: &mut App, chunks: Rect, cfg: &Co
         .style(Style::default().fg(cfg.foreground()))
         .gauge_style(Style::default().fg(cfg.highlight_background()))
         .percent(app.song_progress());
-    f.render_widget(playing, queue_playing[1]);
 }
 
 fn instructions_tab<B: Backend>(f: &mut Frame<B>, app: &mut App, chunks: Rect, cfg: &Config) {
