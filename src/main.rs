@@ -5,6 +5,7 @@ use std::{
     env::{self, args},
     error::Error,
     io,
+    path::{PathBuf, Path},
     time::{Duration, Instant},
 };
 
@@ -65,6 +66,12 @@ fn run_app<B: Backend>(
     tick_rate: Duration,
 ) -> io::Result<()> {
     let mut last_tick = Instant::now();
+    let input: Vec<String> = env::args().collect();
+    let current_dir = env::current_dir().unwrap();
+    if current_dir.read_dir()?.next().is_none() {
+        let join = Path::new(&current_dir).join(&input[1]);
+        app.queue_items.add(join);
+    }
     loop {
         terminal.draw(|f| ui(f, &mut app, &cfg))?;
 
@@ -152,7 +159,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App, cfg: &Config) {
 
     match app.active_tab {
         AppTab::Music => music_tab(f, app, chunks[1], cfg),
-        AppTab::Controls => instructions_tab(f, app, chunks[1], cfg),
+        AppTab::Controls => unimplemented!(),
     };
 }
 
@@ -232,69 +239,8 @@ fn music_tab<B: Backend>(f: &mut Frame<B>, app: &mut App, chunks: Rect, cfg: &Co
         )
         .highlight_symbol(">> ");
 
-    let playing_title = format!("| {current_song} |", current_song = app.current_song());
+    let playing_title = Text::from(format!("| {current_song} |", current_song = app.current_song()));
+    let pp = Rect::new(0,0,5,5);
 
-    // Note Gauge is using background color for progress
-    let playing = Gauge::default()
-        .block(
-            Block::default()
-                .title(playing_title)
-                .borders(Borders::ALL)
-                .border_type(BorderType::Rounded)
-                .title_alignment(Alignment::Center),
-        )
-        .style(Style::default().fg(cfg.foreground()))
-        .gauge_style(Style::default().fg(cfg.highlight_background()))
-        .percent(app.song_progress());
-}
 
-fn instructions_tab<B: Backend>(f: &mut Frame<B>, app: &mut App, chunks: Rect, cfg: &Config) {
-    let chunks = Layout::default()
-        .direction(Direction::Vertical)
-        .margin(2)
-        .constraints([Constraint::Percentage(100)].as_ref())
-        .split(chunks);
-
-    // map header to tui object
-    let header = app
-        .control_table
-        .header
-        .iter()
-        .map(|h| Cell::from(*h).style(Style::default().fg(cfg.highlight_foreground())));
-
-    // Header and first row
-    let header = Row::new(header)
-        .style(Style::default().bg(cfg.background()).fg(cfg.foreground()))
-        .height(1)
-        .bottom_margin(1);
-
-    // map items from table to Row items
-    let rows = app.control_table.items.iter().map(|item| {
-        let height = item
-            .iter()
-            .map(|content| content.chars().filter(|c| *c == '\n').count())
-            .max()
-            .unwrap_or(0)
-            + 1;
-        let cells = item.iter().map(|c| Cell::from(*c));
-        Row::new(cells).height(height as u16).bottom_margin(1)
-    });
-
-    let t = Table::new(rows)
-        .header(header)
-        .block(Block::default().borders(Borders::ALL).title("Controls"))
-        .style(Style::default().fg(cfg.foreground()).bg(cfg.background()))
-        .highlight_style(
-            Style::default()
-                .add_modifier(Modifier::BOLD)
-                .bg(cfg.highlight_background())
-                .fg(cfg.highlight_foreground()),
-        )
-        // .highlight_symbol(">> ")
-        .widths(&[
-            Constraint::Percentage(50),
-            Constraint::Length(30),
-            Constraint::Min(10),
-        ]);
-    f.render_stateful_widget(t, chunks[0], &mut app.control_table.state);
 }
